@@ -105,12 +105,4 @@ With the rise of online meetings and remote learning, understanding participant 
 * Pandas & NumPy
 * Matplotlib
 * Tkinter (GUI)
-
-
-لو عايزة version:
-
-* 🔥 أقصر (for CV)
-* 🔥 أو README شكله premium بـ badges و icons
-* 🔥 أو GitHub bio/project pitch
-
-قوليلي وأنا أظبطهولك 💯
+ 
