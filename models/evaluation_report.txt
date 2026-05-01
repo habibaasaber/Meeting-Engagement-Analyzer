@@ -1,0 +1,24 @@
+=== Model Evaluation Report ===
+
+Random Forest (Engagement Level):
+Accuracy: 1.0000
+Classification Report:
+              precision    recall  f1-score   support
+
+        High       1.00      1.00      1.00        15
+         Low       1.00      1.00      1.00        12
+      Medium       1.00      1.00      1.00        23
+
+    accuracy                           1.00        50
+   macro avg       1.00      1.00      1.00        50
+weighted avg       1.00      1.00      1.00        50
+
+Confusion Matrix:
+[[15  0  0]
+ [ 0 12  0]
+ [ 0  0 23]]
+------------------------------
+
+SVM (Binary Status):
+Accuracy: 1.0000
+------------------------------
