@@ -57,7 +57,7 @@ class FeatureEngineer:
             df['engagement_score'] = (df['duration_ratio'] * 50) + (norm_participation * 50)
             
             # 5. Engagement Index Feature
-            df['engagement_index'] = (df['duration_ratio'] * 0.6) + (norm_participation * 0.4)
+            df['engagement_index'] = (df['duration_ratio'] * 0.5) + (norm_participation * 0.5)
             
             # Feature vector for ML (ensure consistent order)
             X = df[FEATURE_COLUMNS].copy()

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class EngagementApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Meeting Engagement Analyzer")
+        self.root.title("Meeting Engagement Analyzer - AI Dashboard")
         self.root.geometry("1200x850")
         
         # Initialize predictor
@@ -31,25 +31,52 @@ class EngagementApp:
         self.setup_ui()
 
     def setup_ui(self):
-        # Main Layout
-        main_frame = ttk.Frame(self.root, padding="15")
-        main_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Header / Controls
-        control_frame = ttk.LabelFrame(main_frame, text="Controls", padding="10")
+        # Apply Notebook for Tabs
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # TAB 1: Analyzer Dashboard
+        self.analyzer_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.analyzer_frame, text=" 📊 Student Analyzer ")
+        self.setup_analyzer_tab()
+
+        # TAB 2: Model Performance
+        self.performance_frame = ttk.Frame(self.notebook, padding="10")
+        self.notebook.add(self.performance_frame, text=" ⚙️ Model Performance ")
+        self.setup_performance_tab()
+
+    def setup_analyzer_tab(self):
+        # Header / Controls & Search
+        control_frame = ttk.LabelFrame(self.analyzer_frame, text="Controls & Search", padding="10")
         control_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, 10))
         
-        ttk.Button(control_frame, text="Upload Meeting Report", command=self.load_file).pack(side=tk.LEFT, padx=5)
-        ttk.Button(control_frame, text="Export Results to CSV", command=self.export_csv).pack(side=tk.LEFT, padx=5)
+        # File Actions
+        file_frame = ttk.Frame(control_frame)
+        file_frame.pack(side=tk.LEFT, padx=5)
+        ttk.Button(file_frame, text="Upload Report", command=self.load_file).pack(side=tk.LEFT, padx=2)
+        ttk.Button(file_frame, text="Export CSV", command=self.export_csv).pack(side=tk.LEFT, padx=2)
         
-        self.filter_btn = ttk.Button(control_frame, text="Show Low Engagement Students", command=self.toggle_filter)
-        self.filter_btn.pack(side=tk.LEFT, padx=5)
+        # Search Bar
+        search_frame = ttk.Frame(control_frame)
+        search_frame.pack(side=tk.LEFT, padx=20)
+        ttk.Label(search_frame, text="Search Student:").pack(side=tk.LEFT, padx=2)
+        self.search_var = tk.StringVar()
+        self.search_var.trace_add("write", lambda *args: self.update_table()) # Real-time search
+        self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var, width=25)
+        self.search_entry.pack(side=tk.LEFT, padx=2)
+        ttk.Button(search_frame, text="Clear", command=lambda: self.search_var.set("")).pack(side=tk.LEFT, padx=2)
+
+        # Filters
+        filter_frame = ttk.Frame(control_frame)
+        filter_frame.pack(side=tk.LEFT, padx=5)
+        self.filter_btn = ttk.Button(filter_frame, text="Show Low Engagement", command=self.toggle_filter)
+        self.filter_btn.pack(side=tk.LEFT, padx=2)
         
         self.status_label = ttk.Label(control_frame, text="Status: Ready", font=("Segoe UI", 9, "italic"))
         self.status_label.pack(side=tk.RIGHT, padx=5)
         
         # Content Frame (Table and Charts)
-        content_frame = ttk.Frame(main_frame)
+        content_frame = ttk.Frame(self.analyzer_frame)
         content_frame.pack(fill=tk.BOTH, expand=True)
         
         # Table (Left Side)
@@ -69,7 +96,6 @@ class EngagementApp:
         self.tree.heading("Level", text="Level")
         self.tree.heading("Cluster", text="Style")
         
-        # Adjust column widths
         self.tree.column("Name", width=150)
         self.tree.column("Duration", width=80)
         self.tree.column("Chat", width=60)
@@ -82,23 +108,75 @@ class EngagementApp:
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Define tags for colors
-        self.tree.tag_configure('High', background='#d4edda')   # Soft Green
-        self.tree.tag_configure('Medium', background='#fff3cd') # Soft Yellow
-        self.tree.tag_configure('Low', background='#f8d7da')    # Soft Red
-        
-        # Bind double click
+        self.tree.tag_configure('High', background='#d4edda')
+        self.tree.tag_configure('Medium', background='#fff3cd')
+        self.tree.tag_configure('Low', background='#f8d7da')
         self.tree.bind("<Double-1>", self.show_student_details)
         
         # Charts (Right Side)
         charts_container = ttk.Frame(content_frame)
-        charts_container.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=(10, 0))
+        charts_container.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(10, 0))
         
         self.pie_frame = ttk.LabelFrame(charts_container, text="Engagement Distribution", padding="5")
-        self.pie_frame.pack(fill=tk.X, expand=False)
+        self.pie_frame.pack(fill=tk.BOTH, expand=True)
         
+        self.cluster_frame = ttk.LabelFrame(charts_container, text="Participation Style (K-Means)", padding="5")
+        self.cluster_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
         self.bar_frame = ttk.LabelFrame(charts_container, text="Top Student Participation", padding="5")
-        self.bar_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        self.bar_frame.pack(fill=tk.BOTH, expand=True)
+
+    def setup_performance_tab(self):
+        # Horizontal Split: Top for Report, Bottom for Chart
+        self.performance_frame.columnconfigure(0, weight=1)
+        self.performance_frame.rowconfigure(0, weight=1) # Report row
+        self.performance_frame.rowconfigure(1, weight=2) # Chart row (Takes more space)
+
+        # TOP: Statistics Text
+        stats_frame = ttk.LabelFrame(self.performance_frame, text="Evaluation Report", padding="10")
+        stats_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 5))
+        
+        self.stats_text = tk.Text(stats_frame, wrap=tk.WORD, font=("Consolas", 10), height=10)
+        stats_scroll = ttk.Scrollbar(stats_frame, command=self.stats_text.yview)
+        self.stats_text.configure(yscrollcommand=stats_scroll.set)
+        
+        self.stats_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        stats_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # BOTTOM: Comparison Chart
+        chart_frame = ttk.LabelFrame(self.performance_frame, text="Model Comparison (All Algorithms)", padding="10")
+        chart_frame.grid(row=1, column=0, sticky="nsew")
+        
+        self.comparison_canvas_frame = ttk.Frame(chart_frame)
+        self.comparison_canvas_frame.pack(fill=tk.BOTH, expand=True)
+        
+        ttk.Button(stats_frame, text="Refresh Performance Data", command=self.load_performance_data).pack(side=tk.RIGHT, padx=5)
+        
+        self.load_performance_data()
+
+    def load_performance_data(self):
+        report_path = 'models/evaluation_report.txt'
+        self.stats_text.delete('1.0', tk.END)
+        if os.path.exists(report_path):
+            with open(report_path, 'r', encoding='utf-8') as f:
+                self.stats_text.insert(tk.END, f.read())
+        else:
+            self.stats_text.insert(tk.END, "Performance report not found. Please train models.")
+
+        for widget in self.comparison_canvas_frame.winfo_children():
+            widget.destroy()
+
+        plot_path = 'models/model_comparison.png'
+        if os.path.exists(plot_path):
+            try:
+                img = tk.PhotoImage(file=plot_path)
+                img_label = tk.Label(self.comparison_canvas_frame, image=img)
+                img_label.image = img
+                img_label.pack(expand=True)
+            except Exception as e:
+                ttk.Label(self.comparison_canvas_frame, text=f"Could not load chart image: {e}").pack()
+        else:
+            ttk.Label(self.comparison_canvas_frame, text="Comparison chart not found.").pack()
 
     def load_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("CSV/Excel files", "*.csv *.xlsx")])
@@ -106,7 +184,6 @@ class EngagementApp:
             return
             
         try:
-            logger.info(f"Loading file: {file_path}")
             if file_path.endswith('.csv'):
                 self.df = pd.read_csv(file_path)
             else:
@@ -131,7 +208,6 @@ class EngagementApp:
         self.update_table()
 
     def update_table(self):
-        # Clear existing
         for item in self.tree.get_children():
             self.tree.delete(item)
             
@@ -139,13 +215,18 @@ class EngagementApp:
             return
             
         data_to_show = self.results_df
+        
+        # Apply Search Filter
+        query = self.search_var.get().strip().lower()
+        if query:
+            data_to_show = data_to_show[data_to_show['Name'].str.lower().str.contains(query)]
+
+        # Apply Low Engagement Filter
         if self.filter_low:
-            data_to_show = self.results_df[self.results_df['Engagement_Level'] == 'Low']
+            data_to_show = data_to_show[data_to_show['Engagement_Level'] == 'Low']
             
-        # Add data
         for _, row in data_to_show.iterrows():
             level = row['Engagement_Level']
-            # Safely get columns
             duration = round(row.get('Duration (minutes)', 0), 1)
             chat = row.get('Chat Messages Count', 0)
             score = round(row.get('engagement_score', 0), 1)
@@ -161,36 +242,51 @@ class EngagementApp:
             ), tags=(level,))
 
     def update_charts(self):
-        # Clear existing charts
-        for frame in [self.pie_frame, self.bar_frame]:
+        for frame in [self.pie_frame, self.bar_frame, self.cluster_frame]:
             for widget in frame.winfo_children():
                 widget.destroy()
             
         if self.results_df is None:
             return
             
-        # 1. Pie Chart
+        # 1. Engagement Pie Chart
         counts = self.results_df['Engagement_Level'].value_counts()
         labels = counts.index
         sizes = counts.values
         colors = {'High': '#28a745', 'Medium': '#ffc107', 'Low': '#dc3545'}
         pie_colors = [colors.get(l, '#6c757d') for l in labels]
         
-        fig1, ax1 = plt.subplots(figsize=(4, 3))
-        ax1.pie(sizes, labels=labels, autopct='%1.1f%%', colors=pie_colors, startangle=140)
-        ax1.set_title("Engagement Distribution")
+        fig1, ax1 = plt.subplots(figsize=(4, 2.2))
+        ax1.pie(sizes, labels=labels, autopct='%1.1f%%', colors=pie_colors, startangle=140, textprops={'fontsize': 9})
+        ax1.set_title("Engagement Levels", fontsize=10, fontweight='bold')
+        plt.tight_layout()
         
         canvas1 = FigureCanvasTkAgg(fig1, master=self.pie_frame)
         canvas1.draw()
         canvas1.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # 2. Cluster Bar Chart (K-Means Result)
+        cluster_counts = self.results_df['Participation_Cluster'].value_counts()
         
-        # 2. Bar Chart (Top 10 Participations)
+        fig3, ax3 = plt.subplots(figsize=(4, 2.2))
+        cluster_counts.plot(kind='bar', ax=ax3, color='#9467bd')
+        ax3.set_title("K-Means Participation Styles", fontsize=10, fontweight='bold')
+        ax3.set_ylabel("Student Count", fontsize=8)
+        ax3.tick_params(axis='x', labelsize=8)
+        plt.tight_layout()
+        
+        canvas3 = FigureCanvasTkAgg(fig3, master=self.cluster_frame)
+        canvas3.draw()
+        canvas3.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+        # 3. Participation Bar Chart
         top_students = self.results_df.sort_values(by='participation_score', ascending=False).head(10)
         
-        fig2, ax2 = plt.subplots(figsize=(4, 4))
+        fig2, ax2 = plt.subplots(figsize=(4, 3.5))
         ax2.barh(top_students['Name'], top_students['participation_score'], color='#007bff')
-        ax2.set_xlabel("Participation Score")
-        ax2.set_title("Top 10 Active Students")
+        ax2.set_xlabel("Participation Score", fontsize=9)
+        ax2.set_title("Top 10 Active Students", fontsize=10, fontweight='bold')
+        ax2.tick_params(axis='y', labelsize=9)
         plt.tight_layout()
         
         canvas2 = FigureCanvasTkAgg(fig2, master=self.bar_frame)
@@ -205,7 +301,6 @@ class EngagementApp:
         student_name = self.tree.item(item, "values")[0]
         student_data = self.results_df[self.results_df['Name'] == student_name].iloc[0]
         
-        # Create popup
         details_win = tk.Toplevel(self.root)
         details_win.title(f"Student Profile: {student_name}")
         details_win.geometry("500x550")
@@ -214,10 +309,8 @@ class EngagementApp:
         frame = ttk.Frame(details_win, padding="20")
         frame.pack(fill=tk.BOTH, expand=True)
         
-        # Header
         ttk.Label(frame, text=student_name, font=("Segoe UI", 16, "bold")).pack(pady=(0, 10))
         
-        # Main Metrics
         metrics_frame = ttk.LabelFrame(frame, text="Engagement Metrics", padding="10")
         metrics_frame.pack(fill=tk.X, pady=5)
         
@@ -235,7 +328,6 @@ class EngagementApp:
             ttk.Label(row_frame, text=label, width=20).pack(side=tk.LEFT)
             ttk.Label(row_frame, text=val, font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
             
-        # Similar Students
         similar_frame = ttk.LabelFrame(frame, text="Similar Students (KNN Analysis)", padding="10")
         similar_frame.pack(fill=tk.BOTH, expand=True, pady=10)
         
@@ -264,7 +356,6 @@ class EngagementApp:
 
 def run_app():
     root = tk.Tk()
-    # Apply a modern theme if available
     style = ttk.Style()
     if "vista" in style.theme_names():
         style.theme_use("vista")
@@ -274,4 +365,3 @@ def run_app():
 
 if __name__ == "__main__":
     run_app()
-

@@ -1,24 +1,61 @@
-=== Model Evaluation Report ===
+=== Advanced Model Evaluation Report ===
 
-Random Forest (Engagement Level):
-Accuracy: 1.0000
+K-Means Silhouette Score: 0.5467 (Measures cluster quality)
+
+------------------------------
+
+Model: RANDOM FOREST
+Test Accuracy: 0.9850
 Classification Report:
               precision    recall  f1-score   support
 
-        High       1.00      1.00      1.00        15
-         Low       1.00      1.00      1.00        12
-      Medium       1.00      1.00      1.00        23
+        High       0.98      1.00      0.99        56
+         Low       0.98      0.98      0.98        50
+      Medium       0.99      0.98      0.98        94
 
-    accuracy                           1.00        50
-   macro avg       1.00      1.00      1.00        50
-weighted avg       1.00      1.00      1.00        50
+    accuracy                           0.98       200
+   macro avg       0.98      0.99      0.99       200
+weighted avg       0.99      0.98      0.98       200
 
-Confusion Matrix:
-[[15  0  0]
- [ 0 12  0]
- [ 0  0 23]]
 ------------------------------
+Model: SVM
+Test Accuracy: 0.9900
+Classification Report:
+              precision    recall  f1-score   support
 
-SVM (Binary Status):
-Accuracy: 1.0000
+  Disengaged       0.98      0.98      0.98        50
+     Engaged       0.99      0.99      0.99       150
+
+    accuracy                           0.99       200
+   macro avg       0.99      0.99      0.99       200
+weighted avg       0.99      0.99      0.99       200
+
+------------------------------
+Model: KNN
+Test Accuracy: 0.9850
+Classification Report:
+              precision    recall  f1-score   support
+
+        High       1.00      1.00      1.00        56
+         Low       0.96      0.98      0.97        50
+      Medium       0.99      0.98      0.98        94
+
+    accuracy                           0.98       200
+   macro avg       0.98      0.99      0.98       200
+weighted avg       0.99      0.98      0.99       200
+
+------------------------------
+Model: NAIVE BAYES
+Test Accuracy: 0.9300
+Classification Report:
+              precision    recall  f1-score   support
+
+        High       0.86      1.00      0.93        56
+         Low       0.91      1.00      0.95        50
+      Medium       1.00      0.85      0.92        94
+
+    accuracy                           0.93       200
+   macro avg       0.92      0.95      0.93       200
+weighted avg       0.94      0.93      0.93       200
+
 ------------------------------

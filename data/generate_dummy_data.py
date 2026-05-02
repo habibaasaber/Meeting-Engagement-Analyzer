@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import os
 
-def generate_meeting_data(n_students=50, meeting_duration=60):
+def generate_meeting_data(n_students=1000, meeting_duration=60):
     np.random.seed(42)
     
     names = [f"Student {i+1}" for i in range(n_students)]
